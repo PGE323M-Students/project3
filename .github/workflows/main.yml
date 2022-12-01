@@ -1,0 +1,37 @@
+env:
+    ASSIGNMENT: project3
+on: push
+jobs:
+  test:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fetch environment file
+        shell: bash -l {0}
+        run: |
+          curl \
+          --header 'Authorization: token ${{secrets.PGE323M_SECRET_TOKEN}}' \
+          --header 'Accept: application/vnd.github.v3.raw' \
+          -O --location "https://api.github.com/repos/PGE323M/${ASSIGNMENT}/contents/environment.yml"
+      - name: Fetch Tests 
+        shell: bash -l {0}
+        run: |
+          curl \
+          --header 'Authorization: token ${{secrets.PGE323M_SECRET_TOKEN}}' \
+          --header 'Accept: application/vnd.github.v3.raw' \
+          -O --location "https://api.github.com/repos/PGE323M/${ASSIGNMENT}/contents/test.py"
+      - name: Fetch Gold Files
+        shell: bash -l {0}
+        run: |
+          curl \
+          --header 'Authorization: token ${{secrets.PGE323M_SECRET_TOKEN}}' \
+          --header 'Accept: application/vnd.github.v3.raw' \
+          -O --location "https://api.github.com/repos/PGE323M/${ASSIGNMENT}/contents/Nechelik_depth.dat" \
+          -O --location "https://api.github.com/repos/PGE323M/${ASSIGNMENT}/contents/{pressure_gold,saturation_gold}.npy" \
+          -O --location "https://api.github.com/repos/PGE323M/${ASSIGNMENT}/contents/inputs.yml"
+      - uses: mamba-org/provision-with-micromamba@main
+        with:
+          environment-file: environment.yml
+      - name: Run Tests 
+        shell: bash -l {0}
+        run: python -m unittest test.py -vvv
